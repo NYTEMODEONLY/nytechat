@@ -75,6 +75,15 @@ const TerminalChat = () => {
   const inputRef = useRef<TerminalInputRef>(null);
   const cortanaAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Save persona to localStorage whenever it changes
+  useEffect(() => {
+    // Only save persona to localStorage if it's NOT Cortana
+    // This prevents Cortana mode from persisting after refresh
+    if (currentPersona.id !== 'cortana') {
+      localStorage.setItem('currentPersona', JSON.stringify(currentPersona));
+    }
+  }, [currentPersona]);
+  
   // Load saved theme from localStorage on initial render
   useEffect(() => {
     const savedTheme = localStorage.getItem('nytechat-theme');
@@ -87,7 +96,10 @@ const TerminalChat = () => {
     if (savedPersona) {
       try {
         const parsedPersona = JSON.parse(savedPersona);
-        setCurrentPersona(parsedPersona);
+        // Only restore the saved persona if it's NOT Cortana
+        if (parsedPersona.id !== 'cortana') {
+          setCurrentPersona(parsedPersona);
+        }
       } catch (error) {
         console.error('Error parsing saved persona:', error);
         // If there's an error parsing, just use the default
@@ -100,11 +112,6 @@ const TerminalChat = () => {
   useEffect(() => {
     localStorage.setItem('nytechat-theme', theme);
   }, [theme]);
-
-  // Save persona to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('currentPersona', JSON.stringify(currentPersona));
-  }, [currentPersona]);
 
   // Detect mobile viewport - memoized function to reduce recreations
   const checkScreenSize = useCallback(() => {
@@ -292,6 +299,19 @@ const TerminalChat = () => {
           // Stop Cortana music when switching to nytemode
           stopCortanaMusic();
           
+          // Explicitly remove any saved Cortana persona from localStorage
+          const savedPersona = localStorage.getItem('currentPersona');
+          if (savedPersona) {
+            try {
+              const parsedPersona = JSON.parse(savedPersona);
+              if (parsedPersona.id === 'cortana') {
+                localStorage.removeItem('currentPersona');
+              }
+            } catch (error) {
+              console.error('Error parsing saved persona:', error);
+            }
+          }
+          
           // Clear messages and add new welcome message
           setMessages([{
             role: 'assistant',
@@ -308,6 +328,9 @@ const TerminalChat = () => {
           
           // Play Cortana theme music
           playCortanaMusic();
+          
+          // Ensure Cortana mode is not persisted in localStorage
+          localStorage.removeItem('currentPersona');
           
           // Clear messages and start Cortana with her greeting
           const cortanaGreeting: ChatMessage[] = [
