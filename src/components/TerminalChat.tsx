@@ -45,6 +45,7 @@ const TerminalChat = () => {
   const [theme, setTheme] = useState<TerminalTheme>('green');
   const [currentPersona, setCurrentPersona] = useState<typeof nytemodePerson | typeof cortanaPersona>(nytemodePerson);
   const inputRef = useRef<TerminalInputRef>(null);
+  const cortanaAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Load saved theme from localStorage on initial render
   useEffect(() => {
@@ -109,6 +110,16 @@ const TerminalChat = () => {
     const timeInterval = setInterval(updateTime, 1000);
     
     return () => clearInterval(timeInterval);
+  }, []);
+
+  // Clean up audio when component unmounts
+  useEffect(() => {
+    return () => {
+      if (cortanaAudioRef.current) {
+        cortanaAudioRef.current.pause();
+        cortanaAudioRef.current = null;
+      }
+    };
   }, []);
 
   // Animate loading dots when isLoading is true
@@ -194,6 +205,29 @@ const TerminalChat = () => {
     setIsGLaDOSMode(false);
   }, []);
   
+  // Play Cortana theme music
+  const playCortanaMusic = useCallback(() => {
+    if (!cortanaAudioRef.current) {
+      const audio = new Audio("/under_cover_of_night.mp3");
+      audio.volume = 0.3; // 30% volume as requested
+      audio.loop = true; // Loop the music while in Cortana mode
+      cortanaAudioRef.current = audio;
+    }
+    
+    // Start playing the theme
+    cortanaAudioRef.current.play().catch(error => {
+      console.error("Audio playback failed:", error);
+    });
+  }, []);
+  
+  // Stop Cortana theme music
+  const stopCortanaMusic = useCallback(() => {
+    if (cortanaAudioRef.current) {
+      cortanaAudioRef.current.pause();
+      cortanaAudioRef.current.currentTime = 0;
+    }
+  }, []);
+  
   // Key down handler
   const handleKeyDown = useCallback(async (event: KeyboardEvent<HTMLInputElement>) => {
     // Submit message on Enter
@@ -226,6 +260,10 @@ const TerminalChat = () => {
         if (trimmedInput === '!nyte') {
           setCurrentPersona(nytemodePerson);
           setTheme('green');
+          
+          // Stop Cortana music when switching to nytemode
+          stopCortanaMusic();
+          
           // Clear messages and add new welcome message
           setMessages([{
             role: 'assistant',
@@ -239,6 +277,9 @@ const TerminalChat = () => {
         if (trimmedInput === '!cortana') {
           setCurrentPersona(cortanaPersona);
           setTheme('blue');
+          
+          // Play Cortana theme music
+          playCortanaMusic();
           
           // Clear messages and start Cortana with her greeting
           const cortanaGreeting: ChatMessage[] = [
@@ -444,7 +485,7 @@ const TerminalChat = () => {
         }, 100);
       }
     }
-  }, [input, isLoading, chatHistory, currentPersona, connectionStatus, theme]);
+  }, [input, isLoading, chatHistory, currentPersona, connectionStatus, theme, playCortanaMusic, stopCortanaMusic]);
 
   // Memoize placeholder text to prevent unnecessary re-renders
   const inputPlaceholder = useMemo(() => 
