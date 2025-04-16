@@ -44,7 +44,7 @@ const starWarsScroll = keyframes`
     transform: rotateX(20deg) translateY(100%);
     opacity: 1;
   }
-  75% { 
+  70% { 
     opacity: 1;
     transform: rotateX(25deg) translateY(-510%);
   }
@@ -64,6 +64,11 @@ const GLaDOSHeader = styled.h1<{ $theme?: TerminalTheme }>`
   margin-bottom: 2rem;
   text-align: center;
   animation: ${fadeIn} 2s ease-in-out;
+  position: relative;
+  z-index: 120;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 1rem;
+  border-radius: 5px;
 `;
 
 const GLaDOSText = styled.div<{ $theme?: TerminalTheme }>`
@@ -73,7 +78,7 @@ const GLaDOSText = styled.div<{ $theme?: TerminalTheme }>`
   max-width: 800px;
   width: 100%;
   transform-origin: 50% 100%;
-  animation: ${starWarsScroll} 150s linear;
+  animation: ${starWarsScroll} 135s linear;
   transform: rotateX(25deg);
   position: relative;
   height: 60vh;
@@ -81,14 +86,18 @@ const GLaDOSText = styled.div<{ $theme?: TerminalTheme }>`
   color: ${props => props.$theme === 'amber' ? themeColors.amber.text : themeColors.green.text};
 `;
 
-// Add top fade gradient
+// Enhance the top fade to prevent text overlapping with title
 const TopFade = styled.div`
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 100px;
-  background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  height: 150px;
+  background: linear-gradient(to bottom, 
+    rgba(0,0,0,1) 0%, 
+    rgba(0,0,0,1) 50%, 
+    rgba(0,0,0,0.8) 75%,
+    rgba(0,0,0,0) 100%);
   z-index: 110;
   pointer-events: none;
 `;
