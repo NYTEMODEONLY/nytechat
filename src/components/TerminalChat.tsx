@@ -20,7 +20,7 @@ import StatusBar from './StatusBar';
 import TerminalInput from './TerminalInput';
 import dynamic from 'next/dynamic';
 import { nytemodePerson, cortanaPersona } from '../lib/personas';
-import styled, { keyframes } from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 
 // Dynamically import the StillAlive component to reduce bundle size
 const StillAlive = dynamic(() => import('./GlaDOS/StillAlive'), {
@@ -40,113 +40,20 @@ const CortanaBackground = styled.div`
   background-image: url('/cortana-bg.jpg');
   background-size: cover;
   background-position: center;
-  opacity: 0.4; // More transparent to let more black through
-  z-index: 0; // Position between terminal background (-1) and terminal content (>0)
-  pointer-events: none; // Allow clicks to pass through to elements below
-`;
-
-// Animations for floating particles
-const floatUp = keyframes`
-  0% {
-    transform: translateY(100vh) scale(0.8);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.6;
-  }
-  90% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(-50px) scale(1.2);
-    opacity: 0;
-  }
-`;
-
-// Blue particles for Cortana
-const BlueParticles = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  pointer-events: none;
-  overflow: hidden;
-`;
-
-const Particle = styled.div<{ $size: number; $left: number; $duration: number; $delay: number }>`
-  position: absolute;
-  bottom: -50px;
-  left: ${props => props.$left}%;
-  width: ${props => props.$size}px;
-  height: ${props => props.$size}px;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, #5fafff 0%, #0078d7 40%, rgba(0, 120, 215, 0) 70%);
-  box-shadow: 0 0 ${props => props.$size * 0.7}px #0078d7;
-  animation: ${floatUp} ${props => props.$duration}s linear infinite;
-  animation-delay: ${props => props.$delay}s;
-  opacity: 0;
-`;
-
-// Create a separate component for the particles to handle rendering multiple ones
-const CortanaParticles = () => {
-  // Generate an array of random particles
-  const particles = useMemo(() => {
-    return Array.from({ length: 25 }, (_, i) => ({
-      id: i,
-      size: Math.random() * 5 + 2, // Varies between 2-7px
-      left: Math.random() * 100, // Random horizontal position
-      duration: Math.random() * 10 + 15, // Animation duration between 15-25s
-      delay: Math.random() * 30 // Random delay for staggered effect
-    }));
-  }, []);
-
-  return (
-    <BlueParticles>
-      {particles.map(particle => (
-        <Particle
-          key={particle.id}
-          $size={particle.size}
-          $left={particle.left}
-          $duration={particle.duration}
-          $delay={particle.delay}
-        />
-      ))}
-    </BlueParticles>
-  );
-};
-
-// Custom global styles for Cortana's text glow
-const CortanaTextEffect = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 998; // Placed behind the terminal content but ahead of backgrounds
+  opacity: 0.35; // Reduced opacity for more black background
+  z-index: 0;
   pointer-events: none;
 `;
 
-// Create a styled wrapper for Cortana mode that will apply the glow effect
-const CortanaWrapper = styled.div`
-  .message-text, .message-prefix, input, .status-text, .placeholder {
-    text-shadow: 0 0 10px rgba(0, 120, 215, 0.9), 0 0 15px rgba(0, 100, 255, 0.7) !important;
-  }
-  
-  .terminal-content {
-    position: relative;
-    z-index: 4;
+// Cortana text glow styling
+const CortanaGlowStyle = createGlobalStyle`
+  .cortana-mode .assistant-message,
+  .cortana-mode .assistant-prefix,
+  .cortana-mode .user-message,
+  .cortana-mode .user-prefix {
+    text-shadow: 0 0 8px rgba(0, 120, 215, 0.8);
   }
 `;
-
-// Custom styles specific to Cortana mode text elements
-const cortanaTextStyle = {
-  textShadow: '0 0 10px rgba(0, 120, 215, 0.9), 0 0 15px rgba(0, 100, 255, 0.7)',
-  color: '#0078d7'
-};
 
 // Keep bootSequenceComplete outside the component to ensure it persists across hot reloads
 let bootSequenceInitiated = false;
@@ -626,86 +533,50 @@ const TerminalChat = () => {
   return (
     <>
       <GlobalStyles />
+      {currentPersona.id === 'cortana' && <CortanaGlowStyle />}
       <TerminalBackground />
-      {currentPersona.id === 'cortana' && (
-        <>
-          <CortanaBackground />
-          <CortanaParticles />
-          <CortanaTextEffect />
-        </>
-      )}
+      {currentPersona.id === 'cortana' && <CortanaBackground />}
       <TerminalContainer 
         $theme={theme} 
         style={{ 
-          backgroundColor: currentPersona.id === 'cortana' ? 'rgba(0, 0, 0, 0.8)' : '',
-          position: 'relative',
-          zIndex: 2
+          backgroundColor: currentPersona.id === 'cortana' ? 'rgba(0, 0, 0, 0.85)' : '',
         }}
+        className={currentPersona.id === 'cortana' ? 'cortana-mode' : ''}
       >
         {isGLaDOSMode ? (
           <StillAlive onClose={closeGLaDOSMode} theme={theme} />
         ) : (
-          currentPersona.id === 'cortana' ? (
-            <CortanaWrapper className="terminal-content">
-              <MessageList
-                messages={messages}
-                isLoading={isLoading}
-                loadingDots={loadingDots}
-                isUserScrolling={isUserScrolling}
-                setIsUserScrolling={setIsUserScrolling}
-                onContainerClick={handleContainerClick}
-                personaColor={themeColors.blue.text}
-                currentPersonaId={currentPersona.id}
-              />
-              
-              <TerminalInput
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder={inputPlaceholder}
-                isLoading={isLoading}
-                isMobile={isMobile}
-                isSmallScreen={isSmallScreen}
-                enterKeyStyle={enterKeyStyle}
-                theme={theme}
-              />
-              <StatusBar
-                connectionStatus={connectionStatus}
-                currentTime={currentTime}
-                theme={theme}
-              />
-            </CortanaWrapper>
-          ) : (
-            <>
-              <MessageList
-                messages={messages}
-                isLoading={isLoading}
-                loadingDots={loadingDots}
-                isUserScrolling={isUserScrolling}
-                setIsUserScrolling={setIsUserScrolling}
-                onContainerClick={handleContainerClick}
-                personaColor={theme === 'amber' ? themeColors.amber.text : themeColors.green.text}
-                currentPersonaId={currentPersona.id}
-              />
-              
-              <TerminalInput
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder={inputPlaceholder}
-                isLoading={isLoading}
-                isMobile={isMobile}
-                isSmallScreen={isSmallScreen}
-                enterKeyStyle={enterKeyStyle}
-                theme={theme}
-              />
-              <StatusBar
-                connectionStatus={connectionStatus}
-                currentTime={currentTime}
-                theme={theme}
-              />
-            </>
-          )
+          <>
+            <MessageList
+              messages={messages}
+              isLoading={isLoading}
+              loadingDots={loadingDots}
+              isUserScrolling={isUserScrolling}
+              setIsUserScrolling={setIsUserScrolling}
+              onContainerClick={handleContainerClick}
+              personaColor={theme === 'amber' ? themeColors.amber.text : 
+                            theme === 'blue' ? themeColors.blue.text : 
+                            themeColors.green.text}
+              currentPersonaId={currentPersona.id}
+            />
+            
+            <TerminalInput
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder={inputPlaceholder}
+              isLoading={isLoading}
+              isMobile={isMobile}
+              isSmallScreen={isSmallScreen}
+              enterKeyStyle={enterKeyStyle}
+              theme={theme}
+            />
+            <StatusBar
+              connectionStatus={connectionStatus}
+              currentTime={currentTime}
+              theme={theme}
+            />
+          </>
         )}
         <Scanlines $theme={theme} />
         <CRTEdge $theme={theme} />
