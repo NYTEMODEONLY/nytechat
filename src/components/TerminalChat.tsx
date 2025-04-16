@@ -27,6 +27,12 @@ const StillAlive = dynamic(() => import('./GlaDOS/StillAlive'), {
   loading: () => null,
 });
 
+// Dynamically import the CortanaBackground component
+const CortanaBackground = dynamic(() => import('./CortanaBackground'), {
+  ssr: false,
+  loading: () => null,
+});
+
 // Keep bootSequenceComplete outside the component to ensure it persists across hot reloads
 let bootSequenceInitiated = false;
 
@@ -505,7 +511,12 @@ const TerminalChat = () => {
   return (
     <>
       <GlobalStyles />
-      <TerminalBackground />
+      {/* Show TerminalBackground only when not in Cortana mode */}
+      {currentPersona.id !== 'cortana' && <TerminalBackground />}
+      
+      {/* Show CortanaBackground only in Cortana mode */}
+      {currentPersona.id === 'cortana' && <CortanaBackground />}
+      
       <TerminalContainer $theme={theme}>
         {isGLaDOSMode ? (
           <StillAlive onClose={closeGLaDOSMode} theme={theme} />
