@@ -1,14 +1,14 @@
-# NyteChat - Retro Terminal AI Interface
+# nytechat - retro terminal AI interface
 
 > _"NOCTURNAL BY PREFERENCE."_
 
-A cyberpunk terminal-style chat interface that resurrects the aesthetic of vintage computing while harnessing the power of modern AI. NyteChat features an immersive full-screen experience with authentic terminal visuals: scanlines, CRT screen effects, phosphor glow, and multiple color themes.
+A cyberpunk terminal-style chat interface that resurrects the aesthetic of vintage computing while harnessing the power of modern AI. nytechat features an immersive full-screen experience with authentic terminal visuals: scanlines, CRT screen effects, phosphor glow, and multiple color themes.
 
-![NyteChat Interface](https://nytechat-4etp923hg-violetmyst.vercel.app)
+![nytechat Interface](https://nytechat.vercel.app)
 
 ## ACCESS: GRANTED
 
-NyteChat now running at: [https://nytechat-4etp923hg-violetmyst.vercel.app](https://nytechat-4etp923hg-violetmyst.vercel.app)
+nytechat now running at: [https://nytechat.vercel.app](https://nytechat.vercel.app)
 
 ## CORE SYSTEMS
 
@@ -30,7 +30,7 @@ NyteChat now running at: [https://nytechat-4etp923hg-violetmyst.vercel.app](http
 COMMAND        DESCRIPTION
 -------        -----------
 !help          Show this help message
-!info          Show information about NyteChat
+!info          Show information about nytechat
 !clear         Clear the chat history
 !time          Display current system time
 !status        Show connection status
@@ -91,7 +91,7 @@ COMMAND        DESCRIPTION
 
 ## DEPLOYMENT PROTOCOL
 
-NyteChat is optimized for deployment on Vercel:
+nytechat is optimized for deployment on Vercel:
 
 1. Fork this repository
 2. Connect to Vercel
