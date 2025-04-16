@@ -63,7 +63,7 @@ COMMAND        DESCRIPTION
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/NYTEMODEONLY/nytechat.git
+   git clone https://github.com/nytemodeonly/nytechat.git
    cd nytechat
    ```
 
