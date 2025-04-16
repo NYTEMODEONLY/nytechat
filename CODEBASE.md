@@ -73,9 +73,8 @@ This document provides an overview of the NyteChat project structure, showing th
 2. **Code Block Display**:
    - AI response → `MessageList` → `parseMessageContent` → `CodeBlockComponent` → rendered with copy button
 
-3. **GLaDOS Easter Egg**:
-   - `!stillalive` command → `TerminalChat` → `handleBangCommand` → `StillAlive` component
-   - Theme changes also affect GLaDOS mode by passing theme props to styled components
+3. **Hidden Easter Eggs**:
+   - Special commands → `TerminalChat` → `handleBangCommand` → Activation of hidden features
 
 4. **Theme Switching**:
    - `!green` or `!amber` command → `TerminalChat` → `handleBangCommand` → `setTheme` state update → styled components re-render with new theme

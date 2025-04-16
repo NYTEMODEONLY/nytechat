@@ -14,9 +14,9 @@ nytechat now running at: [https://nytechat.vercel.app](https://nytechat.vercel.a
 
 - **Retro Terminal Interface** — Authentic CRT display emulation with scanlines, edge effects, and subtle flicker
 - **Multiple Theme Support** — Classic green phosphor and amber terminals (!green, !amber commands)
-- **AI Personas** — nytemode and Cortana personalities with unique styles (!nyte, !cortana commands)
+- **AI Personas** — Multiple personalities with unique conversation styles
 - **Command System** — Built-in terminal commands with help documentation (!help)
-- **Portal Easter Egg** — Complete GLaDOS "Still Alive" sequence (!stillalive command)
+- **Hidden Easter Eggs** — Secret commands with special features for those who discover them
 - **Markdown Rendering** — Live markdown with syntax highlighting and code blocks
 - **Copy-Enabled Code Blocks** — One-click copying for code snippets
 - **Responsive Design** — Adaptive mobile experience with custom layouts
@@ -36,9 +36,6 @@ COMMAND        DESCRIPTION
 !status        Show connection status
 !green         Switch to green terminal theme
 !amber         Switch to amber terminal theme
-!nyte          Switch to nytemode AI persona
-!cortana       Switch to Cortana AI persona
-!stillalive    Activate GLaDOS mode
 !nytemode      Display creator information
 ```
 
@@ -109,7 +106,7 @@ TerminalChat
 │   └── LoadingIndicator # Animated loading indicator
 ├── TerminalInput       # User input field with command processing
 ├── StatusBar           # Connection status and system time
-└── StillAlive          # GLaDOS Easter Egg (conditionally rendered)
+└── StillAlive          # Hidden easter egg component (conditionally rendered)
 ```
 
 ## SYSTEM CUSTOMIZATION

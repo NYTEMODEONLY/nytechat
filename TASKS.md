@@ -20,12 +20,12 @@
 - [x] Fix React DOM warnings about custom props
 - [x] Rename project to NyteChat and AI to NYTEMODE
 - [x] Create comprehensive CODEBASE.md documentation for project structure
-- [x] Implement GLaDOS "Still Alive" easter egg (!stillalive command)
-  - Added Portal-themed animation with synchronized lyrics
+- [x] Implement hidden easter eggs
+  - Added special animations with synchronized effects
   - Implemented close button functionality
-  - Made GLaDOS mode theme-aware (supports green/amber themes)
-  - Fixed close button to properly exit GLaDOS mode
-- [x] Optimize Still Alive animation to match song timing
+  - Made easter eggs theme-aware (supports green/amber themes)
+  - Fixed close button to properly exit special modes
+- [x] Optimize animations to match timing
 - [x] Add markdown code block formatting with Copy button
 - [x] Implement theme switching (green/amber terminal colors)
   - Added !green and !amber commands to toggle between themes
@@ -33,7 +33,7 @@
   - Implemented color swapping for contrast between themes
   - Added theme support for status bar, input field, and messages
   - Ensured theme changes happen instantly without page reload
-  - Made GLaDOS mode respond to theme changes
+  - Made special features respond to theme changes
 - [x] Fix type error in MessageList.tsx (content property undefined issue)
   - Created SafeMessage type extension to handle undefined content
   - Added proper type checks throughout MessageList component
@@ -55,7 +55,7 @@
 
 ## Optional Enhancements
 
-- [ ] Add more command-line style functionality (besides !clear and !stillalive)
+- [ ] Add more command-line style functionality
 - [ ] Add ASCII art animations
 - [ ] Implement loading states with retro progress bars
 - [ ] Add speech recognition for voice input
@@ -65,7 +65,7 @@
 
 ## AI Persona Implementation Ideas
 
-- [ ] Create different NYTEMODE personalities with distinct response styles
+- [ ] Create different personalities with distinct response styles
 - [ ] Add a persona selection option in the UI
 - [ ] Implement specialized personas for different topics (tech, creative, etc.)
 - [ ] Add visual indicators to show which persona is currently active
