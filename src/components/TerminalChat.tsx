@@ -35,11 +35,13 @@ const CortanaBackground = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background-image: url('/cortana-bg.jpg');
   background-size: cover;
   background-position: center;
-  opacity: 0.3; // 30% opacity for transparency
-  z-index: -1;
+  opacity: 0.6; // Increased opacity for better visibility
+  z-index: 0; // Position between terminal background (-1) and terminal content (>0)
   pointer-events: none; // Allow clicks to pass through to elements below
 `;
 
@@ -523,7 +525,7 @@ const TerminalChat = () => {
       <GlobalStyles />
       <TerminalBackground />
       {currentPersona.id === 'cortana' && <CortanaBackground />}
-      <TerminalContainer $theme={theme}>
+      <TerminalContainer $theme={theme} style={{ backgroundColor: currentPersona.id === 'cortana' ? 'rgba(0, 0, 0, 0.7)' : '' }}>
         {isGLaDOSMode ? (
           <StillAlive onClose={closeGLaDOSMode} theme={theme} />
         ) : (
