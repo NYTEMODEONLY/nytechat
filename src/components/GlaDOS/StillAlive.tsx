@@ -44,16 +44,16 @@ const starWarsScroll = keyframes`
     transform: rotateX(20deg) translateY(100%);
     opacity: 1;
   }
-  85% { 
+  70% { 
     opacity: 1;
-    transform: rotateX(25deg) translateY(-680%);
+    transform: rotateX(25deg) translateY(-510%);
   }
   95% {
-    transform: rotateX(25deg) translateY(-800%);
+    transform: rotateX(25deg) translateY(-700%);
     opacity: 1;
   }
   100% { 
-    transform: rotateX(25deg) translateY(-850%);
+    transform: rotateX(25deg) translateY(-750%);
     opacity: 0;
   }
 `;
@@ -78,8 +78,9 @@ const GLaDOSText = styled.div<{ $theme?: TerminalTheme }>`
   max-width: 800px;
   width: 100%;
   transform-origin: 50% 100%;
-  animation: ${starWarsScroll} 220s linear forwards;
+  animation: ${starWarsScroll} 135s linear forwards;
   transform: rotateX(25deg);
+  perspective: 350px;
   position: relative;
   height: 60vh;
   overflow: visible;
@@ -214,6 +215,8 @@ const AnimationContainer = styled.div<{ $isEnded: boolean }>`
   height: 100%;
   opacity: ${props => props.$isEnded ? 0 : 1};
   transition: opacity 2s ease-out;
+  perspective: 400px;
+  transform-style: preserve-3d;
 `;
 
 interface StillAliveProps {
