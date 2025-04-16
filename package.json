@@ -1,27 +1,42 @@
 {
-  "name": "retro-ai-chat",
+  "name": "nytechat",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "DISABLE_ESLINT_PLUGIN=true next build",
     "start": "next start",
+    "start:dev": "NEXT_PUBLIC_GROK_API_KEY=xai-k0x69GqpdEUpx1Szkz66B1c7bFnYEsVsylzoPjRTK1NTqK5GAHMJez2tzkSTGFf5O8TAC6UZH4SNggJP next dev",
+    "start:clean": "./start.sh",
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
+    "@types/dompurify": "^3.0.5",
+    "axios": "^1.8.4",
+    "dompurify": "^3.2.5",
+    "highlight.js": "^11.11.1",
+    "isomorphic-dompurify": "^2.23.0",
+    "lucide-react": "^0.488.0",
+    "marked": "^15.0.8",
+    "next": "15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.0"
+    "styled-components": "^6.1.17",
+    "three": "^0.175.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@types/styled-components": "^5.1.34",
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

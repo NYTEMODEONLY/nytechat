@@ -1,0 +1,350 @@
+^C
+head -18 src/components/MessageList.tsx > tmp.txt && cat tmp.txt
+import React, { memo, useMemo, useRef, useEffect } from 'react';
+import type { MouseEvent } from 'react';
+import type { ChatMessage } from '../api/grok';
+import { MessagesContainer, Message, MessagePrefix } from '../styles/Terminal.styles';
+import styled from 'styled-components';
+import { ensureString } from '../lib/utils';
+import { marked } from 'marked';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
+import { Copy } from 'lucide-react';
+import type { TerminalTheme } from '../styles/Terminal.styles';
+import DOMPurify from 'dompurify';
+import { useTheme } from 'styled-components';
+import { useChatStore } from '../stores/chatStore';
+import { TerminalText } from './TerminalText';
+import CodeBlock from './CodeBlock';
+
+// Add styled components for code containers
+const CodeContainer = styled.div`
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.6);
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+`;
+
+const CodeBlock = styled.pre<{ $personaColor?: string }>`
+  margin: 0;
+  padding: 0;
+  color: ${props => props.$personaColor || '#66FF66'};
+`;
+
+const CopyButton = styled.button<{ $personaColor?: string }>`
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: ${props => props.$personaColor ? `${props.$personaColor}20` : 'rgba(102, 255, 102, 0.2)'};
+  color: ${props => props.$personaColor || '#66FF66'};
+  border: 1px solid ${props => props.$personaColor || '#66FF66'};
+  border-radius: 3px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+// Define MessageContent component that was missing
+const MessageContent = styled.div`
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  
+  a {
+    color: inherit;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+`;
+
+// Loading dot component for animation
+const LoadingDot = styled.span<{ delay: number }>`
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  margin: 0 2px;
+  opacity: 0.7;
+  animation: pulse 1.4s infinite ease-in-out;
+  animation-delay: ${props => props.delay}s;
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+`;
+
+// Define local interface that allows for potentially undefined content
+interface SafeMessage extends Omit<ChatMessage, 'content'> {
+  content: string | undefined;
+}
+
+interface MessageItemProps {
+  message: SafeMessage;
+  index: number;
+  personaColor?: string;
+  theme?: TerminalTheme;
+}
+
+// Helper function to parse markdown code blocks
+const parseMessageContent = (content: string) => {
+  // Match triple backtick code blocks
+  const codeBlockRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
+  const parts: Array<{ type: 'text' | 'code'; content: string; language?: string }> = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null = null;
+
+  // Use a different approach to avoid assignment in expression
+  let execResult = codeBlockRegex.exec(content);
+  while (execResult !== null) {
+    match = execResult;
+    
+    // Add text before the code block
+    if (match.index > lastIndex) {
+      parts.push({
+        type: 'text',
+        content: content.substring(lastIndex, match.index)
+      });
+    }
+
+    // Add the code block with proper type handling
+    parts.push({
+      type: 'code',
+      language: typeof match[1] === 'string' ? match[1] : '',
+      content: match[2] || '' // Ensure content is always a string
+    });
+
+    lastIndex = match.index + match[0].length;
+    execResult = codeBlockRegex.exec(content);
+  }
+
+  // Add any remaining text after the last code block
+  if (lastIndex < content.length) {
+    parts.push({
+      type: 'text',
+      content: content.substring(lastIndex)
+    });
+  }
+
+  return parts.length > 0 ? parts : [{ type: 'text', content }];
+};
+
+// Configure marked to handle links safely with target="_blank"
+const renderer = new marked.Renderer();
+renderer.link = function(href, title, text) {
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer" title="${title || ''}">${text}</a>`;
+};
+marked.setOptions({ renderer });
+
+// Format message function with link handling
+const formatMessage = (content: string): { html: string; hasCodeBlock: boolean } => {
+  const html = DOMPurify.sanitize(marked.parse(content));
+  const hasCodeBlock = content.includes('```');
+  return { html, hasCodeBlock };
+};
+
+// Code block component with copy functionality
+const CodeBlockComponent = memo(({ content, personaColor }: { content: string; personaColor?: string }) => {
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content.trim())
+      .then(() => {
+        // Could add a visual feedback here
+      })
+      .catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+  };
+
+  return (
+    <CodeContainer>
+      <CodeBlock $personaColor={personaColor}>{content.trim()}</CodeBlock>
+      <CopyButton $personaColor={personaColor} onClick={handleCopy}>Copy</CopyButton>
+    </CodeContainer>
+  );
+});
+
+CodeBlockComponent.displayName = 'CodeBlockComponent';
+
+// Memoized individual message component
+const MessageItem = memo(({ message, index, personaColor, theme }: MessageItemProps & { theme?: TerminalTheme }) => {
+  const isUser = message.role === 'user';
+  // Convert content to string directly
+  const messageContent = typeof message.content === 'string' ? message.content : '';
+  
+  const renderMessageContent = () => {
+    if (messageContent.trim() === '') return null;
+
+    const { html, hasCodeBlock } = formatMessage(messageContent);
+
+    if (hasCodeBlock) {
+      const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+      const parts: React.ReactNode[] = [];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+
+      while ((match = codeBlockRegex.exec(messageContent)) !== null) {
+        // Add text before the code block
+        if (match.index > lastIndex) {
+          const textPart = messageContent.substring(lastIndex, match.index);
+          const { html: textHtml } = formatMessage(textPart);
+          parts.push(
+            <MessageContent key={`text-${lastIndex}`} dangerouslySetInnerHTML={{ __html: textHtml }} />
+          );
+        }
+
+        // Add the code block
+        const language = match[1] || 'plaintext';
+        const code = match[2];
+        parts.push(
+          <CodeContainer key={`code-${match.index}`}>
+            <CodeBlock $personaColor={personaColor}>{code}</CodeBlock>
+            <CopyButton $personaColor={personaColor} onClick={() => navigator.clipboard.writeText(code)}>Copy</CopyButton>
+          </CodeContainer>
+        );
+
+        lastIndex = match.index + match[0].length;
+      }
+
+      // Add any remaining text after the last code block
+      if (lastIndex < messageContent.length) {
+        const textPart = messageContent.substring(lastIndex);
+        const { html: textHtml } = formatMessage(textPart);
+        parts.push(
+          <MessageContent key={`text-${lastIndex}`} dangerouslySetInnerHTML={{ __html: textHtml }} />
+        );
+      }
+
+      return parts;
+    } else {
+      return <MessageContent dangerouslySetInnerHTML={{ __html: html }} />;
+    }
+  };
+  
+  return (
+    <Message 
+      key={`message-${message.timestamp}-${index}`}
+      data-is-user={isUser}
+      className={isUser ? 'user-message' : 'assistant-message'}
+    >
+      <MessagePrefix 
+        data-is-user={isUser}
+        className={isUser ? 'user-prefix' : 'assistant-prefix'}
+        $personaColor={!isUser ? personaColor : undefined}
+        $theme={theme}
+      >
+        {isUser ? 'USER>' : 'NYTEMODE>'}
+      </MessagePrefix>
+      
+      {renderMessageContent()}
+    </Message>
+  );
+});
+
+MessageItem.displayName = 'MessageItem';
+
+// Loading indicator component
+const LoadingIndicator = memo(({ loadingDots, personaColor }: { loadingDots: string; personaColor?: string }) => (
+  <Message data-is-user={false} className="assistant-message">
+    <MessagePrefix 
+      data-is-user={false} 
+      className="assistant-prefix"
+      $personaColor={personaColor}
+    >
+      NYTEMODE&gt;
+    </MessagePrefix>
+    {loadingDots}
+  </Message>
+));
+
+LoadingIndicator.displayName = 'LoadingIndicator';
+
+const MessageWrapper = styled.div<{ $type: string; $theme?: TerminalTheme }>`
+  display: flex;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  background-color: ${props => 
+    props.$type === 'system' 
+      ? '#1a1a1a' 
+      : props.$type === 'assistant' 
+        ? '#1e1e1e' 
+        : 'transparent'
+  };
+  padding: ${props => props.$type !== 'user' ? '0.5rem' : '0'};
+`;
+
+interface MessageListProps {
+  messages: ChatMessage[];
+  isLoading: boolean;
+  loadingDots: string;
+  isUserScrolling: boolean;
+  setIsUserScrolling: (value: boolean) => void;
+  onContainerClick: (e: MouseEvent<HTMLDivElement>) => void;
+  personaColor?: string;
+  theme?: TerminalTheme;
+}
+
+const MessageList: React.FC<MessageListProps> = ({ 
+  messages, 
+  isLoading,
+  loadingDots,
+  isUserScrolling,
+  setIsUserScrolling,
+  onContainerClick,
+  personaColor,
+  theme
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Autoscroll to bottom when new messages arrive
+  useEffect(() => {
+    if (!isUserScrolling && containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [messages.length, isUserScrolling]);
+  
+  // Render message items with memoization for performance
+  const messageItems = useMemo(() => {
+    return messages.map((message, index) => (
+      <MessageItem 
+        key={`msg-${message.timestamp}-${index}`} 
+        message={message as SafeMessage} 
+        index={index}
+        personaColor={personaColor}
+        theme={theme}
+      />
+    ));
+  }, [messages, personaColor, theme]);
+  
+  return (
+    <MessagesContainer 
+      ref={containerRef} 
+      onClick={onContainerClick}
+    >
+      {messageItems}
+      {isLoading && (
+        <LoadingIndicator 
+          loadingDots={loadingDots}
+          personaColor={personaColor}
+        />
+      )}
+    </MessagesContainer>
+  );
+};
+
+export default memo(MessageList); 

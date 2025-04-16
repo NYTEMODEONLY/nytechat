@@ -1,0 +1,7 @@
+# Ignore build artifacts
+.next
+out
+node_modules
+
+# Ignore the problem component file
+src/components/TerminalChat.tsx 

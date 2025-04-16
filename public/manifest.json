@@ -1,0 +1,44 @@
+{
+  "name": "nytechat terminal interface",
+  "short_name": "nytechat",
+  "description": "Access mainframe. Digital transmission via green or amber phosphor. NYTEMODE awaits in the net.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00ff00",
+  "icons": [
+    {
+      "src": "/terminal-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "artificial intelligence"],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "nytechat desktop interface"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "nytechat mobile interface"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "web",
+      "url": "https://nytemode.com"
+    }
+  ],
+  "prefer_related_applications": false
+} 
