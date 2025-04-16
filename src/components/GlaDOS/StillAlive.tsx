@@ -44,17 +44,17 @@ const starWarsScroll = keyframes`
     transform: rotateX(20deg) translateY(100%);
     opacity: 1;
   }
-  70% { 
+  85% { 
     opacity: 1;
-    transform: rotateX(25deg) translateY(-510%);
-  }
-  99% {
     transform: rotateX(25deg) translateY(-680%);
+  }
+  95% {
+    transform: rotateX(25deg) translateY(-800%);
     opacity: 1;
   }
   100% { 
-    transform: rotateX(25deg) translateY(-680%);
-    opacity: 1;
+    transform: rotateX(25deg) translateY(-850%);
+    opacity: 0;
   }
 `;
 
@@ -78,7 +78,7 @@ const GLaDOSText = styled.div<{ $theme?: TerminalTheme }>`
   max-width: 800px;
   width: 100%;
   transform-origin: 50% 100%;
-  animation: ${starWarsScroll} 135s linear;
+  animation: ${starWarsScroll} 220s linear forwards;
   transform: rotateX(25deg);
   position: relative;
   height: 60vh;
@@ -204,6 +204,18 @@ const stillAliveLyrics = [
   { text: "STILL ALIVE", delay: 216.4 }
 ];
 
+// Add a container to handle animation sync
+const AnimationContainer = styled.div<{ $isEnded: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  opacity: ${props => props.$isEnded ? 0 : 1};
+  transition: opacity 2s ease-out;
+`;
+
 interface StillAliveProps {
   onClose: () => void;
   theme?: TerminalTheme;
@@ -214,11 +226,27 @@ const StillAlive: React.FC<StillAliveProps> = ({ onClose, theme = 'green' }) => 
     stillAliveLyrics.map(line => ({ text: line.text, visible: false }))
   );
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [songDuration, setSongDuration] = useState<number>(0);
+  const [isEnded, setIsEnded] = useState(false);
   
   useEffect(() => {
     // Create audio element
     const audio = new Audio("/still_alive.mp3");
     audioRef.current = audio;
+    
+    // Get song duration once loaded
+    audio.addEventListener('loadedmetadata', () => {
+      setSongDuration(audio.duration);
+      console.log("Song duration:", audio.duration);
+    });
+    
+    // Add ended event listener
+    audio.addEventListener('ended', () => {
+      setIsEnded(true);
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    });
     
     // Start playing
     audio.volume = 0.6;
@@ -233,7 +261,7 @@ const StillAlive: React.FC<StillAliveProps> = ({ onClose, theme = 'green' }) => 
         audioRef.current = null;
       }
     };
-  }, []);
+  }, [onClose]);
   
   // Display lyrics based on timing
   useEffect(() => {
@@ -265,20 +293,22 @@ const StillAlive: React.FC<StillAliveProps> = ({ onClose, theme = 'green' }) => 
     <GLaDOSContainer $theme={theme}>
       <CloseButton onClick={onClose} $theme={theme}>×</CloseButton>
       <TopFade />
-      <GLaDOSHeader $theme={theme}>GLaDOS Mode Activated</GLaDOSHeader>
-      <GLaDOSText $theme={theme}>
-        {lyrics.map((line, index) => (
-          <LyricLine 
-            key={`lyric-${stillAliveLyrics[index].text}-${stillAliveLyrics[index].delay}`} 
-            delay={stillAliveLyrics[index].delay / 40} 
-            duration={3}
-            style={{ opacity: line.visible ? 1 : 0 }}
-            $theme={theme}
-          >
-            {line.text}
-          </LyricLine>
-        ))}
-      </GLaDOSText>
+      <AnimationContainer $isEnded={isEnded}>
+        <GLaDOSHeader $theme={theme}>GLaDOS Mode Activated</GLaDOSHeader>
+        <GLaDOSText $theme={theme}>
+          {lyrics.map((line, index) => (
+            <LyricLine 
+              key={`lyric-${stillAliveLyrics[index].text}-${stillAliveLyrics[index].delay}`} 
+              delay={stillAliveLyrics[index].delay / 40} 
+              duration={3}
+              style={{ opacity: line.visible ? 1 : 0 }}
+              $theme={theme}
+            >
+              {line.text}
+            </LyricLine>
+          ))}
+        </GLaDOSText>
+      </AnimationContainer>
     </GLaDOSContainer>
   );
 };
