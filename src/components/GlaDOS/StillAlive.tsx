@@ -44,7 +44,7 @@ const starWarsScroll = keyframes`
     transform: rotateX(20deg) translateY(100%);
     opacity: 1;
   }
-  80% { 
+  75% { 
     opacity: 1;
     transform: rotateX(25deg) translateY(-510%);
   }
@@ -73,7 +73,7 @@ const GLaDOSText = styled.div<{ $theme?: TerminalTheme }>`
   max-width: 800px;
   width: 100%;
   transform-origin: 50% 100%;
-  animation: ${starWarsScroll} 176s linear;
+  animation: ${starWarsScroll} 150s linear;
   transform: rotateX(25deg);
   position: relative;
   height: 60vh;
