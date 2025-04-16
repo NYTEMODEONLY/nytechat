@@ -79,7 +79,7 @@ const GLaDOSText = styled.div<{ $theme?: TerminalTheme }>`
   max-width: 800px;
   width: 100%;
   transform-origin: 50% 100%;
-  animation: ${starWarsScroll} 149s linear forwards;
+  animation: ${starWarsScroll} 158s linear forwards;
   transform: rotateX(25deg);
   perspective: 350px;
   position: relative;
