@@ -15,7 +15,7 @@ const BackgroundContainer = styled.div`
   overflow: hidden;
   pointer-events: none;
   /* Add a background color as fallback */
-  background-color: rgba(0, 20, 40, 0.5);
+  background-color: rgba(0, 0, 30, 0.4);
 `;
 
 // Fallback image if Three.js has issues
@@ -28,63 +28,70 @@ const FallbackImage = styled.div`
   background-image: url('/cortana-bg.jpg');
   background-size: cover;
   background-position: center;
-  opacity: 0.4;
+  opacity: 0.4; /* Increased opacity for consistent visibility */
   z-index: -1;
   filter: brightness(0.6) contrast(1.3) blur(1px);
 `;
 
-// Floating particles component
-const Particles = () => {
-  const COUNT = 150;
+// Particle system for floating blue specs
+const BlueParticles = () => {
+  const count = 100; // Number of particles
+  const particlesRef = useRef<THREE.Points>(null);
   const { viewport } = useThree();
   
-  // Create particles with random positions
-  const particles = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < COUNT; i++) {
-      const x = (Math.random() - 0.5) * viewport.width * 1.5;
-      const y = (Math.random() - 0.5) * viewport.height * 1.5;
-      const z = Math.random() * -3;
-      const speed = Math.random() * 0.15 + 0.05;
-      const size = Math.random() * 1.5 + 0.5;
-      // Generate blue hues
-      const color = new THREE.Color().setHSL(0.6 + Math.random() * 0.1, 0.8, 0.5 + Math.random() * 0.3);
-      temp.push({ x, y, z, speed, size, color });
+  // Create geometry with random positions
+  const positions = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    
+    for (let i = 0; i < count; i++) {
+      // Distribute particles across the screen
+      positions[i * 3] = (Math.random() - 0.5) * viewport.width * 2;      // x
+      positions[i * 3 + 1] = (Math.random() - 0.5) * viewport.height * 2; // y
+      positions[i * 3 + 2] = Math.random() * -5;                          // z (depth)
     }
-    return temp;
-  }, [viewport]);
+    
+    return positions;
+  }, [viewport.width, viewport.height]);
   
-  const particlesRef = useRef<THREE.Points>(null);
-  const particlesMaterialRef = useRef<THREE.PointsMaterial>(null);
+  // Create additional attributes for size and randomness
+  const sizes = useMemo(() => {
+    const sizes = new Float32Array(count);
+    
+    for (let i = 0; i < count; i++) {
+      sizes[i] = Math.random() * 0.5 + 0.1; // Random size between 0.1 and 0.6
+    }
+    
+    return sizes;
+  }, []);
   
-  // Update particles position
-  useFrame((state, delta) => {
-    if (particlesRef.current) {
-      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+  const speeds = useMemo(() => {
+    const speeds = new Float32Array(count);
+    
+    for (let i = 0; i < count; i++) {
+      speeds[i] = Math.random() * 0.05 + 0.01; // Random speed for upward movement
+    }
+    
+    return speeds;
+  }, []);
+  
+  // Update particle positions on each frame
+  useFrame(() => {
+    if (!particlesRef.current) return;
+    
+    const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    
+    for (let i = 0; i < count; i++) {
+      // Move particles upward
+      positions[i * 3 + 1] += speeds[i];
       
-      for (let i = 0; i < COUNT; i++) {
-        const i3 = i * 3;
-        // Move particles upward
-        positions[i3 + 1] += particles[i].speed * delta * 10;
-        
-        // Reset particles when they go out of view
-        if (positions[i3 + 1] > viewport.height) {
-          positions[i3] = (Math.random() - 0.5) * viewport.width * 1.5;
-          positions[i3 + 1] = -viewport.height;
-          positions[i3 + 2] = Math.random() * -3;
-        }
-        
-        // Add some slight horizontal movement
-        positions[i3] += Math.sin(state.clock.elapsedTime * 0.1 + i) * 0.01;
-      }
-      
-      particlesRef.current.geometry.attributes.position.needsUpdate = true;
-      
-      // Add pulsating effect to particles
-      if (particlesMaterialRef.current) {
-        particlesMaterialRef.current.size = (Math.sin(state.clock.elapsedTime * 0.5) * 0.2 + 1) * 1.5;
+      // Reset if particle moves out of view
+      if (positions[i * 3 + 1] > viewport.height) {
+        positions[i * 3] = (Math.random() - 0.5) * viewport.width * 2;
+        positions[i * 3 + 1] = -viewport.height;
       }
     }
+    
+    particlesRef.current.geometry.attributes.position.needsUpdate = true;
   });
   
   return (
@@ -92,43 +99,41 @@ const Particles = () => {
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={COUNT}
-          array={new Float32Array(COUNT * 3)}
+          count={count}
+          array={positions}
           itemSize={3}
-          onUpdate={(self) => {
-            const positions = self.array as Float32Array;
-            for (let i = 0; i < COUNT; i++) {
-              const i3 = i * 3;
-              positions[i3] = particles[i].x;
-              positions[i3 + 1] = particles[i].y;
-              positions[i3 + 2] = particles[i].z;
-            }
-          }}
         />
         <bufferAttribute
-          attach="attributes-color"
-          count={COUNT}
-          array={new Float32Array(COUNT * 3)}
-          itemSize={3}
-          onUpdate={(self) => {
-            const colors = self.array as Float32Array;
-            for (let i = 0; i < COUNT; i++) {
-              const i3 = i * 3;
-              colors[i3] = particles[i].color.r;
-              colors[i3 + 1] = particles[i].color.g;
-              colors[i3 + 2] = particles[i].color.b;
-            }
-          }}
+          attach="attributes-size"
+          count={count}
+          array={sizes}
+          itemSize={1}
         />
       </bufferGeometry>
-      <pointsMaterial
-        ref={particlesMaterialRef}
-        size={1.5}
-        sizeAttenuation={true}
-        transparent={true}
-        opacity={0.8}
-        vertexColors={true}
+      <shaderMaterial
         blending={THREE.AdditiveBlending}
+        depthWrite={false}
+        transparent
+        vertexShader={`
+          attribute float size;
+          
+          void main() {
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = size * (300.0 / -mvPosition.z);
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `}
+        fragmentShader={`
+          void main() {
+            float dist = length(gl_PointCoord - vec2(0.5));
+            if (dist > 0.5) discard;
+            
+            // Blue glow with gradient from center
+            float intensity = 1.0 - (dist * 2.0);
+            vec3 color = vec3(0.3, 0.7, 1.0) * intensity;
+            gl_FragColor = vec4(color, intensity);
+          }
+        `}
       />
     </points>
   );
@@ -148,7 +153,7 @@ const GlitchingPlane = () => {
   const uniforms = {
     uTexture: { value: texture },
     uTime: { value: 0 },
-    uIntensity: { value: 0.12 }, // Increased base intensity
+    uIntensity: { value: 0.1 }, // Increased intensity
     uResolution: { value: new THREE.Vector2(viewport.width, viewport.height) }
   };
 
@@ -159,13 +164,9 @@ const GlitchingPlane = () => {
       
       // Random glitches
       if (Math.random() > 0.97) {
-        materialRef.current.uniforms.uIntensity.value = Math.random() * 0.15 + 0.08; // Higher minimum intensity
+        materialRef.current.uniforms.uIntensity.value = Math.random() * 0.15 + 0.05; // Increased glitch intensity
       } else {
-        // Don't decay below the base intensity
-        materialRef.current.uniforms.uIntensity.value = Math.max(
-          materialRef.current.uniforms.uIntensity.value * 0.95, 
-          0.08
-        );
+        materialRef.current.uniforms.uIntensity.value *= 0.95;
       }
     }
   });
@@ -199,9 +200,6 @@ const GlitchingPlane = () => {
             // Digital glitch effect
             vec2 uv = vUv;
             
-            // Add slight zoom to fill the screen better
-            uv = (uv - 0.5) * 0.95 + 0.5;
-            
             // Small wave distortion
             float wavyEffect = sin(uv.y * 80.0 + uTime * 3.0) * sin(uTime * 0.5) * 0.003; // Increased effect
             uv.x += wavyEffect;
@@ -226,44 +224,33 @@ const GlitchingPlane = () => {
             // Combine effects
             vec4 color = vec4(r, g, b, 1.0) * scanline + noise;
             
-            // Add blue tint and brighten
-            color.rgb = mix(color.rgb, vec3(0.2, 0.5, 0.9), 0.2);
-            color.rgb *= 1.3;
+            // Brighten image a bit
+            color.rgb *= 1.2;
             
-            // Add opacity for the overlay effect
-            color.a = 0.65; // 65% opacity to make it more visible
+            // Constant opacity - no fading in/out
+            color.a = 0.55; // 55% opacity for consistent visibility
             
             gl_FragColor = color;
           }
         `}
         uniforms={uniforms}
         transparent={true}
-        depthWrite={false}
       />
     </mesh>
   );
 };
 
 const CortanaBackground = () => {
-  const [threeJsLoaded, setThreeJsLoaded] = useState(false);
-
-  // Set loaded status after component mounts
-  useEffect(() => {
-    setThreeJsLoaded(true);
-  }, []);
-
   return (
     <BackgroundContainer>
       {/* Fallback background image */}
       <FallbackImage />
       
       {/* Three.js canvas for glitching effects */}
-      {threeJsLoaded && (
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 5] }}>
-          <GlitchingPlane />
-          <Particles />
-        </Canvas>
-      )}
+      <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 5] }}>
+        <GlitchingPlane />
+        <BlueParticles />
+      </Canvas>
     </BackgroundContainer>
   );
 };
