@@ -20,6 +20,7 @@ import StatusBar from './StatusBar';
 import TerminalInput from './TerminalInput';
 import dynamic from 'next/dynamic';
 import { nytemodePerson, cortanaPersona } from '../lib/personas';
+import styled from 'styled-components';
 
 // Dynamically import the StillAlive component to reduce bundle size
 const StillAlive = dynamic(() => import('./GlaDOS/StillAlive'), {
@@ -27,11 +28,20 @@ const StillAlive = dynamic(() => import('./GlaDOS/StillAlive'), {
   loading: () => null,
 });
 
-// Dynamically import the CortanaBackground component
-const CortanaBackground = dynamic(() => import('./CortanaBackground'), {
-  ssr: false,
-  loading: () => null,
-});
+// Cortana background styling
+const CortanaBackground = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/cortana-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3; // 30% opacity for transparency
+  z-index: -1;
+  pointer-events: none; // Allow clicks to pass through to elements below
+`;
 
 // Keep bootSequenceComplete outside the component to ensure it persists across hot reloads
 let bootSequenceInitiated = false;
@@ -511,12 +521,8 @@ const TerminalChat = () => {
   return (
     <>
       <GlobalStyles />
-      {/* Show TerminalBackground only when not in Cortana mode */}
-      {currentPersona.id !== 'cortana' && <TerminalBackground />}
-      
-      {/* Show CortanaBackground only in Cortana mode */}
+      <TerminalBackground />
       {currentPersona.id === 'cortana' && <CortanaBackground />}
-      
       <TerminalContainer $theme={theme}>
         {isGLaDOSMode ? (
           <StillAlive onClose={closeGLaDOSMode} theme={theme} />
