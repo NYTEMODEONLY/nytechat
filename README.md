@@ -4,7 +4,7 @@
 
 A cyberpunk terminal-style chat interface that resurrects the aesthetic of vintage computing while harnessing the power of modern AI. nytechat features an immersive full-screen experience with authentic terminal visuals: scanlines, CRT screen effects, phosphor glow, and multiple color themes.
 
-![nytechat Interface](https://nytechat.vercel.app)
+![nytechat Interface](./public/screenshot.png)
 
 ## ACCESS: GRANTED
 
