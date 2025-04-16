@@ -202,6 +202,17 @@ const TerminalChat = () => {
       
       const trimmedInput = input.trim();
       
+      // Prevent overly long messages that could abuse the API
+      const MAX_MESSAGE_LENGTH = 1000;
+      if (trimmedInput.length > MAX_MESSAGE_LENGTH) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `ERROR: Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters. Please send a shorter message.`,
+          timestamp: Date.now(),
+        }]);
+        return;
+      }
+      
       // Handle standard bang commands
       if (trimmedInput.startsWith('!')) {
         setInput('');
