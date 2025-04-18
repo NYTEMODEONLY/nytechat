@@ -50,6 +50,18 @@ const GameScore = styled.div<{ $theme?: TerminalTheme }>`
   font-family: 'Courier New', monospace;
 `;
 
+const GameControls = styled.div<{ $theme?: TerminalTheme }>`
+  color: ${props => 
+    props.$theme === 'amber' ? themeColors.amber.text : 
+    props.$theme === 'blue' ? themeColors.blue.text :
+    themeColors.green.text};
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  opacity: 0.8;
+`;
+
 const GameOver = styled.div<{ $theme?: TerminalTheme }>`
   position: absolute;
   top: 50%;
@@ -285,6 +297,9 @@ const SnakeGame: FC<SnakeGameProps> = ({ onClose, theme = 'green' }) => {
         $theme={theme}
       />
       <GameScore $theme={theme}>Score: {score}</GameScore>
+      <GameControls $theme={theme}>
+        Use Arrow Keys to move • ESC to exit
+      </GameControls>
       
       {isGameOver && (
         <GameOver $theme={theme}>
