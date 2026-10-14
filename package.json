@@ -21,10 +21,10 @@
     "isomorphic-dompurify": "^2.23.0",
     "lucide-react": "^0.488.0",
     "marked": "^15.0.8",
-    "next": "15.3.6",
+    "next": "16.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "styled-components": "^6.1.17",
+    "styled-components": "^6.6.0",
     "three": "^0.175.0"
   },
   "devDependencies": {
